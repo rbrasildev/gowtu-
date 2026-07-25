@@ -1,0 +1,137 @@
+// Sistema de Patrimônio — schema Prisma
+// Modelo unificado: Diesel, Gasolina, Graxa, Peças e Consumíveis são "Produtos".
+// Toda entrada/saída passa por MovimentoEstoque -> estoque e relatórios automáticos.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TipoEquipamento {
+  EQUIPAMENTO
+  VEICULO
+}
+
+enum StatusEquipamento {
+  ATIVO
+  MANUTENCAO
+  INATIVO
+}
+
+enum StatusColaborador {
+  ATIVO
+  AFASTADO
+  DESLIGADO
+}
+
+enum CategoriaProduto {
+  DIESEL
+  GASOLINA
+  GRAXA
+  PECA
+  CONSUMO
+}
+
+enum UnidadeMedida {
+  L
+  KG
+  UN
+  ML
+  M
+  CX
+}
+
+enum TipoMovimento {
+  ENTRADA
+  SAIDA
+}
+
+model Colaborador {
+  id         String            @id @default(cuid())
+  nome       String
+  matricula  String?           @unique
+  cargo      String?
+  setor      String?
+  telefone   String?
+  email      String?
+  status     StatusColaborador @default(ATIVO)
+  admissao   DateTime?
+  observacao String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  movimentos MovimentoEstoque[]
+
+  @@index([status])
+}
+
+model Equipamento {
+  id         String            @id @default(cuid())
+  nome       String
+  tipo       TipoEquipamento   @default(EQUIPAMENTO)
+  patrimonio String?           @unique
+  placa      String?
+  modelo     String?
+  fabricante String?
+  ano        Int?
+  status     StatusEquipamento @default(ATIVO)
+  medidor    Decimal?          @db.Decimal(12, 2) // hodômetro (km) ou horímetro (h)
+  observacao String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  movimentos MovimentoEstoque[]
+
+  @@index([tipo])
+  @@index([status])
+}
+
+model Produto {
+  id           String           @id @default(cuid())
+  nome         String
+  categoria    CategoriaProduto
+  unidade      UnidadeMedida    @default(UN)
+  codigo       String?          @unique // SKU / código interno
+  precoUnitario Decimal?        @db.Decimal(12, 2)
+  estoqueMinimo Decimal         @default(0) @db.Decimal(12, 2)
+  ativo        Boolean          @default(true)
+  observacao   String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  movimentos MovimentoEstoque[]
+
+  @@index([categoria])
+}
+
+model MovimentoEstoque {
+  id            String        @id @default(cuid())
+  tipo          TipoMovimento
+  data          DateTime      @default(now())
+  quantidade    Decimal       @db.Decimal(12, 3)
+  valorUnitario Decimal?      @db.Decimal(12, 2)
+  fornecedor    String? // para ENTRADA (compra)
+  notaFiscal    String?
+  medidor       Decimal?      @db.Decimal(12, 2) // hodômetro/horímetro no abastecimento
+  observacao    String?
+  createdAt     DateTime      @default(now())
+
+  produtoId String
+  produto   Produto @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+
+  equipamentoId String?
+  equipamento   Equipamento? @relation(fields: [equipamentoId], references: [id], onDelete: SetNull)
+
+  colaboradorId String?
+  colaborador   Colaborador? @relation(fields: [colaboradorId], references: [id], onDelete: SetNull)
+
+  @@index([produtoId])
+  @@index([equipamentoId])
+  @@index([colaboradorId])
+  @@index([tipo])
+  @@index([data])
+}

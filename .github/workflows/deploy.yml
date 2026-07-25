@@ -1,0 +1,41 @@
+name: Deploy para a VPS
+
+# Dispara a cada push na branch main (e permite rodar manualmente).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Garante que um deploy não atropele o outro.
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          port: ${{ secrets.VPS_PORT }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          command_timeout: 20m
+          script: |
+            set -e
+            echo "==> Atualizando código"
+            cd /opt/gowtu
+            git fetch --all
+            git reset --hard origin/main
+            echo "==> Instalando dependências"
+            npm ci
+            echo "==> Sincronizando banco (Prisma)"
+            npx prisma db push --skip-generate
+            echo "==> Build de produção"
+            npm run build
+            echo "==> Recarregando PM2 (zero-downtime)"
+            pm2 reload gowtu --update-env || pm2 start ecosystem.config.js
+            pm2 save
+            echo "==> Deploy concluído ✅"

@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Design tokens — estilo Vercel / Geist (base do shadcn/ui).
+   Monocromático, hairline borders, superfícies planas.
+   Valores em RGB para usar /alpha.
+   ============================================================ */
+:root {
+  --bg: 255 255 255;
+  --surface: 255 255 255;
+  --surface-2: 250 250 250;
+  --border: 235 235 235;
+
+  --text-primary: 10 10 10;
+  --text-secondary: 102 102 102;
+  --text-muted: 163 163 163;
+
+  --accent: 10 10 10;        /* primário monocromático (preto) */
+  --accent-fg: 250 250 250;
+  --accent-soft: 244 244 245;
+
+  --success: 0 138 62;
+  --success-soft: 233 247 239;
+  --warning: 181 108 0;
+  --warning-soft: 251 243 224;
+  --danger: 218 44 56;
+  --danger-soft: 253 236 237;
+  --info: 0 112 243;         /* azul clássico da Vercel */
+  --info-soft: 233 242 254;
+
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.dark {
+  --bg: 0 0 0;               /* preto puro, como a Vercel */
+  --surface: 10 10 10;
+  --surface-2: 23 23 23;
+  --border: 38 38 38;
+
+  --text-primary: 250 250 250;
+  --text-secondary: 161 161 170;
+  --text-muted: 115 115 115;
+
+  --accent: 250 250 250;     /* primário branco no dark */
+  --accent-fg: 10 10 10;
+  --accent-soft: 38 38 38;
+
+  --success: 62 207 142;
+  --success-soft: 12 40 27;
+  --warning: 245 176 66;
+  --warning-soft: 44 33 12;
+  --danger: 255 99 105;
+  --danger-soft: 45 18 20;
+  --info: 82 165 255;
+  --info-soft: 12 32 58;
+}
+
+* {
+  border-color: rgb(var(--border));
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: rgb(var(--bg));
+  color: rgb(var(--text-primary));
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Foco visível e acessível (WCAG 2.4.7) */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Respeita preferência de movimento reduzido (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border));
+  border-radius: 999px;
+}
+
+/* Utilitário de skeleton */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgb(var(--surface-2));
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--border) / 0.5),
+    transparent
+  );
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ============================================================
+   Impressão — usada pelo Relatório Mensal
+   ============================================================ */
+@media print {
+  @page {
+    margin: 14mm;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-block {
+    display: block !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .print-avoid-break {
+    break-inside: avoid;
+  }
+}
