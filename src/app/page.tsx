@@ -1,12 +1,8 @@
 import Link from "next/link";
 import { getDashboard } from "@/lib/dashboard";
 import { CATEGORIAS } from "@/lib/domain";
-import {
-  formatCurrency,
-  formatNumber,
-  formatQuantidade,
-  formatDate,
-} from "@/lib/utils";
+import { formatNumber, formatQuantidade, formatDate } from "@/lib/utils";
+import { getMoedaConfig, fmtMoney } from "@/lib/currency";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
@@ -19,7 +15,7 @@ import { TONE_SOFT } from "@/lib/tone";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const d = await getDashboard();
+  const [d, moeda] = await Promise.all([getDashboard(), getMoedaConfig()]);
 
   return (
     <div className="animate-fade-in">
@@ -52,7 +48,7 @@ export default async function DashboardPage() {
         />
         <StatCard
           label="Valor em estoque"
-          value={formatCurrency(d.valorTotalEstoque)}
+          value={fmtMoney(d.valorTotalEstoque, moeda)}
           sub="combustíveis, peças e consumo"
           icon="wallet"
           tone="success"
@@ -140,7 +136,7 @@ export default async function DashboardPage() {
                         : formatNumber(c.saldoTotal)}
                     </p>
                     <p className="text-xs text-text-secondary tabular-nums">
-                      {formatCurrency(c.valorTotal)}
+                      {fmtMoney(c.valorTotal, moeda)}
                     </p>
                   </div>
                   <Icon name="chevronRight" size={16} className="text-text-muted" />

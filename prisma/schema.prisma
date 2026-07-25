@@ -50,6 +50,15 @@ enum TipoMovimento {
   SAIDA
 }
 
+// Configuração única do sistema (linha singleton).
+// Valores monetários são armazenados em USD (moeda principal);
+// taxaUsdBrl converte para exibição em BRL.
+model Configuracao {
+  id         String   @id @default("singleton")
+  taxaUsdBrl Decimal  @default(5.0000) @db.Decimal(12, 4)
+  updatedAt  DateTime @updatedAt
+}
+
 model Colaborador {
   id         String            @id @default(cuid())
   nome       String

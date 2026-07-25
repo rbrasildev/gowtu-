@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { NAV_GROUPS, MOBILE_NAV, isActive } from "@/lib/nav";
 import { Icon } from "./ui/icon";
 import { ThemeToggle } from "./theme-toggle";
+import { CurrencyToggle } from "./currency-toggle";
 
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
@@ -96,7 +97,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Brand compact />
             </div>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
+            <CurrencyToggle />
             <ThemeToggle />
           </div>
         </header>

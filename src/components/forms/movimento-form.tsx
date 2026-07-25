@@ -131,9 +131,9 @@ export function MovimentoForm({
         </Field>
 
         <Field
-          label={entrada ? "Preço unitário (R$)" : "Custo unitário (R$)"}
+          label={entrada ? "Preço unitário (US$)" : "Custo unitário (US$)"}
           htmlFor="valorUnitario"
-          hint="Opcional"
+          hint="Em dólar (opcional)"
         >
           <Input
             id="valorUnitario"

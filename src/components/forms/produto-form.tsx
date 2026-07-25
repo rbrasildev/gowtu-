@@ -65,7 +65,7 @@ export function ProdutoForm({
           />
         </Field>
 
-        <Field label="Preço unitário (R$)" htmlFor="precoUnitario" hint="Usado no valor do estoque">
+        <Field label="Preço unitário (US$)" htmlFor="precoUnitario" hint="Em dólar — moeda principal">
           <Input
             id="precoUnitario"
             name="precoUnitario"

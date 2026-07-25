@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { categoriaFromSlug, CATEGORIAS } from "@/lib/domain";
 import { getResumoCategoria } from "@/lib/estoque";
 import { getMovimentosPorCategoria } from "@/lib/movimentos";
-import { formatCurrency, formatQuantidade, formatNumber } from "@/lib/utils";
+import { formatQuantidade, formatNumber } from "@/lib/utils";
+import { getMoedaConfig, fmtMoney } from "@/lib/currency";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -35,9 +36,10 @@ export default async function CategoriaPage({
   if (!categoria) notFound();
 
   const meta = CATEGORIAS[categoria];
-  const [resumo, movimentos] = await Promise.all([
+  const [resumo, movimentos, moeda] = await Promise.all([
     getResumoCategoria(categoria),
     getMovimentosPorCategoria(categoria, { q, limit: 60 }),
+    getMoedaConfig(),
   ]);
 
   const unidade = resumo.unidadePadrao ?? meta.unidadePadrao;
@@ -94,7 +96,7 @@ export default async function CategoriaPage({
         />
         <StatCard
           label="Valor em estoque"
-          value={formatCurrency(resumo.valorTotal)}
+          value={fmtMoney(resumo.valorTotal, moeda)}
           icon="wallet"
           tone="success"
         />
@@ -123,7 +125,7 @@ export default async function CategoriaPage({
             </ButtonLink>
           }
         />
-        <ProdutoList produtos={resumo.produtos} categoria={categoria} />
+        <ProdutoList produtos={resumo.produtos} categoria={categoria} moeda={moeda} />
       </Card>
 
       {/* Movimentações */}
@@ -132,7 +134,7 @@ export default async function CategoriaPage({
           title="Histórico de movimentações"
           subtitle={`${movimentos.length} registro(s)`}
         />
-        <MovimentoList movimentos={movimentos} slug={slug} />
+        <MovimentoList movimentos={movimentos} slug={slug} moeda={moeda} />
       </Card>
     </div>
   );

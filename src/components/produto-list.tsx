@@ -3,7 +3,8 @@ import { Icon } from "./ui/icon";
 import { Badge } from "./ui/badge";
 import { EmptyState } from "./ui/empty-state";
 import { ConfirmDelete } from "./confirm-delete";
-import { formatCurrency, formatQuantidade, formatNumber } from "@/lib/utils";
+import { formatQuantidade, formatNumber } from "@/lib/utils";
+import { fmtMoney, type MoedaConfig } from "@/lib/currency";
 import { CATEGORIAS, type Categoria } from "@/lib/domain";
 import type { ProdutoComEstoque } from "@/lib/estoque";
 import { excluirProduto } from "@/app/estoque/[slug]/actions";
@@ -11,9 +12,11 @@ import { excluirProduto } from "@/app/estoque/[slug]/actions";
 export function ProdutoList({
   produtos,
   categoria,
+  moeda,
 }: {
   produtos: ProdutoComEstoque[];
   categoria: Categoria;
+  moeda: MoedaConfig;
 }) {
   const meta = CATEGORIAS[categoria];
 
@@ -50,7 +53,7 @@ export function ProdutoList({
                   <div className="font-medium text-text-primary">{p.nome}</div>
                   <div className="text-xs text-text-secondary">
                     {p.codigo ? `Cód. ${p.codigo} · ` : ""}
-                    {formatCurrency(p.precoUnitario)}/{p.unidade}
+                    {fmtMoney(p.precoUnitario, moeda)}/{p.unidade}
                   </div>
                 </td>
                 <td className="px-3 py-3 text-right">
@@ -71,7 +74,7 @@ export function ProdutoList({
                   {p.estoqueMinimo > 0 ? formatNumber(p.estoqueMinimo) : "—"}
                 </td>
                 <td className="px-3 py-3 text-right tabular-nums text-text-primary">
-                  {formatCurrency(p.valorEstoque)}
+                  {fmtMoney(p.valorEstoque, moeda)}
                 </td>
                 <td className="px-5 py-3">
                   <div className="flex items-center justify-end gap-1">
@@ -93,7 +96,7 @@ export function ProdutoList({
                 <p className="font-medium text-text-primary">{p.nome}</p>
                 <p className="text-xs text-text-secondary">
                   {p.codigo ? `Cód. ${p.codigo} · ` : ""}
-                  {formatCurrency(p.precoUnitario)}/{p.unidade}
+                  {fmtMoney(p.precoUnitario, moeda)}/{p.unidade}
                 </p>
               </div>
               <div className="text-right">
@@ -105,7 +108,7 @@ export function ProdutoList({
                   {formatQuantidade(p.saldo, p.unidade)}
                 </p>
                 <p className="text-xs text-text-secondary tabular-nums">
-                  {formatCurrency(p.valorEstoque)}
+                  {fmtMoney(p.valorEstoque, moeda)}
                 </p>
               </div>
             </div>

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { getDashboard } from "@/lib/dashboard";
 import { CATEGORIAS, CATEGORIA_LIST } from "@/lib/domain";
-import { formatCurrency, formatQuantidade } from "@/lib/utils";
+import { formatQuantidade } from "@/lib/utils";
+import { getMoedaConfig, fmtMoney } from "@/lib/currency";
 import { PageHeader } from "@/components/ui/page-header";
 import { Icon } from "@/components/ui/icon";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Estoque" };
 
 export default async function EstoqueHub() {
-  const d = await getDashboard();
+  const [d, moeda] = await Promise.all([getDashboard(), getMoedaConfig()]);
   const byCat = new Map(d.categorias.map((c) => [c.categoria, c]));
 
   return (
@@ -58,7 +59,7 @@ export default async function EstoqueHub() {
               </p>
               <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
                 <span className="text-sm font-semibold tabular-nums text-text-primary">
-                  {formatCurrency(info?.valorTotal ?? 0)}
+                  {fmtMoney(info?.valorTotal ?? 0, moeda)}
                 </span>
                 <span className="flex items-center gap-1 text-xs font-medium text-accent">
                   Abrir

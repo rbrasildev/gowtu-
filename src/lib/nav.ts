@@ -40,6 +40,10 @@ export const NAV_GROUPS: NavGroup[] = [
     title: "Relatórios",
     items: [{ href: "/relatorio", label: "Relatório Mensal", icon: "report" }],
   },
+  {
+    title: "Sistema",
+    items: [{ href: "/configuracoes", label: "Configurações", icon: "gear" }],
+  },
 ];
 
 // Navegação inferior (mobile) — 5 destinos principais

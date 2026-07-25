@@ -1,13 +1,13 @@
 import { gerarRelatorio } from "@/lib/relatorio";
 import { CATEGORIAS } from "@/lib/domain";
 import {
-  formatCurrency,
   formatDate,
   formatNumber,
   formatQuantidade,
   monthLabel,
   toNumber,
 } from "@/lib/utils";
+import { getMoedaConfig, fmtMoney, moedaSimbolo } from "@/lib/currency";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -31,7 +31,7 @@ export default async function RelatorioPage({
   const mes = sp.mes ? parseInt(sp.mes, 10) : hoje.getMonth() + 1;
   const anos = Array.from({ length: 6 }, (_, i) => hoje.getFullYear() - i);
 
-  const r = await gerarRelatorio(ano, mes);
+  const [r, moeda] = await Promise.all([gerarRelatorio(ano, mes), getMoedaConfig()]);
   const periodo = monthLabel(ano, mes);
   const saldoLiquido = r.totais.entradaValor - r.totais.saidaValor;
 
@@ -80,21 +80,21 @@ export default async function RelatorioPage({
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 print-avoid-break">
             <StatCard
               label="Compras (entradas)"
-              value={formatCurrency(r.totais.entradaValor)}
+              value={fmtMoney(r.totais.entradaValor, moeda)}
               sub={`${r.totais.entradas} lançamento(s)`}
               icon="arrowDown"
               tone="success"
             />
             <StatCard
               label="Consumo (saídas)"
-              value={formatCurrency(r.totais.saidaValor)}
+              value={fmtMoney(r.totais.saidaValor, moeda)}
               sub={`${r.totais.saidas} lançamento(s)`}
               icon="arrowUp"
               tone="danger"
             />
             <StatCard
               label="Saldo do período"
-              value={formatCurrency(saldoLiquido)}
+              value={fmtMoney(saldoLiquido, moeda)}
               sub="entradas − saídas"
               icon="wallet"
               tone={saldoLiquido >= 0 ? "info" : "warning"}
@@ -117,9 +117,13 @@ export default async function RelatorioPage({
                   <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-text-secondary">
                     <th className="px-5 py-2.5 font-medium">Categoria</th>
                     <th className="px-3 py-2.5 text-right font-medium">Entrada</th>
-                    <th className="px-3 py-2.5 text-right font-medium">R$ Entrada</th>
+                    <th className="px-3 py-2.5 text-right font-medium">
+                      {moedaSimbolo(moeda.moeda)} Entrada
+                    </th>
                     <th className="px-3 py-2.5 text-right font-medium">Saída</th>
-                    <th className="px-5 py-2.5 text-right font-medium">R$ Saída</th>
+                    <th className="px-5 py-2.5 text-right font-medium">
+                      {moedaSimbolo(moeda.moeda)} Saída
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -144,13 +148,13 @@ export default async function RelatorioPage({
                             : "—"}
                         </td>
                         <td className="px-3 py-3 text-right tabular-nums">
-                          {l.entradaValor > 0 ? formatCurrency(l.entradaValor) : "—"}
+                          {l.entradaValor > 0 ? fmtMoney(l.entradaValor, moeda) : "—"}
                         </td>
                         <td className="px-3 py-3 text-right tabular-nums">
                           {l.saidaQtd > 0 ? formatQuantidade(l.saidaQtd, l.unidade) : "—"}
                         </td>
                         <td className="px-5 py-3 text-right tabular-nums">
-                          {l.saidaValor > 0 ? formatCurrency(l.saidaValor) : "—"}
+                          {l.saidaValor > 0 ? fmtMoney(l.saidaValor, moeda) : "—"}
                         </td>
                       </tr>
                     );
@@ -161,11 +165,11 @@ export default async function RelatorioPage({
                     <td className="px-5 py-3 text-text-primary">Total</td>
                     <td className="px-3 py-3" />
                     <td className="px-3 py-3 text-right tabular-nums text-success">
-                      {formatCurrency(r.totais.entradaValor)}
+                      {fmtMoney(r.totais.entradaValor, moeda)}
                     </td>
                     <td className="px-3 py-3" />
                     <td className="px-5 py-3 text-right tabular-nums text-danger">
-                      {formatCurrency(r.totais.saidaValor)}
+                      {fmtMoney(r.totais.saidaValor, moeda)}
                     </td>
                   </tr>
                 </tfoot>
@@ -193,7 +197,7 @@ export default async function RelatorioPage({
                         <span className="font-medium text-text-primary">{e.nome}</span>
                       </div>
                       <span className="text-sm font-semibold tabular-nums text-text-primary">
-                        {formatCurrency(e.valorTotal)}
+                        {fmtMoney(e.valorTotal, moeda)}
                       </span>
                     </div>
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -250,7 +254,7 @@ export default async function RelatorioPage({
                           {m.equipamento?.nome ?? m.fornecedor ?? "—"}
                         </td>
                         <td className="px-5 py-2.5 text-right tabular-nums">
-                          {valor > 0 ? formatCurrency(valor) : "—"}
+                          {valor > 0 ? fmtMoney(valor, moeda) : "—"}
                         </td>
                       </tr>
                     );

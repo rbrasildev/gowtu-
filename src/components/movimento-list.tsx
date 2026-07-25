@@ -2,7 +2,8 @@ import { Icon } from "./ui/icon";
 import { Badge } from "./ui/badge";
 import { EmptyState } from "./ui/empty-state";
 import { ConfirmDelete } from "./confirm-delete";
-import { formatDate, formatQuantidade, formatCurrency, toNumber } from "@/lib/utils";
+import { formatDate, formatQuantidade, toNumber } from "@/lib/utils";
+import { fmtMoney, type MoedaConfig } from "@/lib/currency";
 import { CATEGORIAS } from "@/lib/domain";
 import type { MovimentoComRelacoes } from "@/lib/movimentos";
 import { excluirMovimento } from "@/app/estoque/[slug]/actions";
@@ -10,9 +11,11 @@ import { excluirMovimento } from "@/app/estoque/[slug]/actions";
 export function MovimentoList({
   movimentos,
   slug,
+  moeda,
 }: {
   movimentos: MovimentoComRelacoes[];
   slug: string;
+  moeda: MoedaConfig;
 }) {
   if (movimentos.length === 0) {
     return (
@@ -75,7 +78,7 @@ export function MovimentoList({
               </span>
               {total > 0 && (
                 <span className="text-xs text-text-secondary tabular-nums">
-                  {formatCurrency(total)}
+                  {fmtMoney(total, moeda)}
                 </span>
               )}
               <div className="no-print">
