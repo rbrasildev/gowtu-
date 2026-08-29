@@ -29,11 +29,13 @@ jobs:
             cd /opt/gowtu
             git fetch --all
             git reset --hard origin/main
-            echo "==> Instalando dependências"
-            npm ci
+            echo "==> Instalando dependências (sem scripts; esbuild falha nesta VPS)"
+            npm ci --ignore-scripts
+            npx prisma generate
             echo "==> Sincronizando banco (Prisma)"
             npx prisma db push --skip-generate
-            echo "==> Build de produção"
+            echo "==> Build de produção (limpo)"
+            rm -rf .next
             npm run build
             echo "==> Recarregando PM2 (zero-downtime)"
             pm2 reload gowtu --update-env || pm2 start ecosystem.config.js
