@@ -28,6 +28,11 @@ enum StatusColaborador {
   DESLIGADO
 }
 
+enum TipoRemuneracao {
+  SALARIO
+  COMISSAO
+}
+
 enum CategoriaProduto {
   DIESEL
   GASOLINA
@@ -104,8 +109,14 @@ model Colaborador {
   status     StatusColaborador @default(ATIVO)
   admissao   DateTime?
   observacao String?
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
+
+  // Remuneração: salário fixo (em USD) OU comissão em % sobre o ouro
+  tipoRemuneracao    TipoRemuneracao @default(SALARIO)
+  salario            Decimal?        @db.Decimal(12, 2)
+  comissaoPercentual Decimal?        @db.Decimal(6, 3)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   movimentos MovimentoEstoque[]
 

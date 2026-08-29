@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { STATUS_COLAB } from "@/lib/domain";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatNumber } from "@/lib/utils";
+import { getMoedaConfig, fmtMoney, type MoedaConfig } from "@/lib/currency";
+import type { Colaborador } from "@prisma/client";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -40,6 +42,7 @@ export default async function ColaboradoresPage({
     prisma.colaborador.count({ where: { status: "ATIVO" } }),
     prisma.colaborador.count({ where: { status: "AFASTADO" } }),
   ]);
+  const moeda = await getMoedaConfig();
 
   return (
     <div className="animate-fade-in">
@@ -89,6 +92,7 @@ export default async function ColaboradoresPage({
                     <th className="px-5 py-2.5 font-medium">Nome</th>
                     <th className="px-3 py-2.5 font-medium">Cargo / Setor</th>
                     <th className="px-3 py-2.5 font-medium">Contato</th>
+                    <th className="px-3 py-2.5 font-medium">Remuneração</th>
                     <th className="px-3 py-2.5 font-medium">Admissão</th>
                     <th className="px-3 py-2.5 font-medium">Situação</th>
                     <th className="px-5 py-2.5 text-right font-medium">Ações</th>
@@ -113,6 +117,9 @@ export default async function ColaboradoresPage({
                         </td>
                         <td className="px-3 py-3 text-text-secondary">
                           {c.telefone ?? c.email ?? "—"}
+                        </td>
+                        <td className="px-3 py-3 tabular-nums text-text-primary">
+                          {remuneracaoTexto(c, moeda)}
                         </td>
                         <td className="px-3 py-3 text-text-secondary">
                           {formatDate(c.admissao)}
@@ -147,6 +154,9 @@ export default async function ColaboradoresPage({
                         {c.cargo ?? "Sem cargo"}
                         {c.setor ? ` · ${c.setor}` : ""}
                       </p>
+                      <p className="mt-0.5 text-xs font-medium text-text-primary tabular-nums">
+                        {remuneracaoTexto(c, moeda)}
+                      </p>
                       <div className="mt-1.5">
                         <Badge tone={st.tone} dot>
                           {st.label}
@@ -163,6 +173,18 @@ export default async function ColaboradoresPage({
       </Card>
     </div>
   );
+}
+
+function remuneracaoTexto(
+  c: Pick<Colaborador, "tipoRemuneracao" | "salario" | "comissaoPercentual">,
+  moeda: MoedaConfig,
+): string {
+  if (c.tipoRemuneracao === "COMISSAO") {
+    return c.comissaoPercentual != null
+      ? `${formatNumber(c.comissaoPercentual, 3)}% · ouro`
+      : "Comissão";
+  }
+  return c.salario != null ? fmtMoney(c.salario, moeda) : "—";
 }
 
 function RowActions({ id, nome }: { id: string; nome: string }) {

@@ -2,8 +2,9 @@ import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { CancelButton } from "@/components/ui/cancel-button";
 import { FormError } from "@/components/ui/form-error";
+import { RemuneracaoFields } from "./remuneracao-fields";
 import { STATUS_COLAB } from "@/lib/domain";
-import { toDateInput } from "@/lib/utils";
+import { toDateInput, toNumber } from "@/lib/utils";
 import type { Colaborador } from "@prisma/client";
 
 export function ColaboradorForm({
@@ -96,6 +97,18 @@ export function ColaboradorForm({
             defaultValue={toDateInput(colaborador?.admissao)}
           />
         </Field>
+
+        <RemuneracaoFields
+          defaultTipo={colaborador?.tipoRemuneracao ?? "SALARIO"}
+          defaultSalario={
+            colaborador?.salario != null ? String(toNumber(colaborador.salario)) : ""
+          }
+          defaultComissao={
+            colaborador?.comissaoPercentual != null
+              ? String(toNumber(colaborador.comissaoPercentual))
+              : ""
+          }
+        />
 
         <Field label="Observações" htmlFor="observacao" className="sm:col-span-2">
           <Textarea

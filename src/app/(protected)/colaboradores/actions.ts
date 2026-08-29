@@ -5,6 +5,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 
+const decimalOpt = z
+  .string()
+  .trim()
+  .transform((v) => (v === "" ? null : Number(v.replace(",", "."))))
+  .refine((v) => v === null || (Number.isFinite(v) && v >= 0), "Valor inválido");
+
 const schema = z.object({
   nome: z.string().trim().min(1, "Informe o nome"),
   matricula: z.string().trim().optional(),
@@ -19,6 +25,9 @@ const schema = z.object({
   status: z.enum(["ATIVO", "AFASTADO", "DESLIGADO"]),
   admissao: z.string().trim().optional(),
   observacao: z.string().trim().optional(),
+  tipoRemuneracao: z.enum(["SALARIO", "COMISSAO"]),
+  salario: decimalOpt,
+  comissaoPercentual: decimalOpt,
 });
 
 export async function salvarColaborador(id: string | null, formData: FormData) {
@@ -38,6 +47,10 @@ export async function salvarColaborador(id: string | null, formData: FormData) {
     status: d.status,
     admissao: d.admissao ? new Date(d.admissao) : null,
     observacao: d.observacao || null,
+    tipoRemuneracao: d.tipoRemuneracao,
+    // guarda só o campo do tipo escolhido
+    salario: d.tipoRemuneracao === "SALARIO" ? d.salario : null,
+    comissaoPercentual: d.tipoRemuneracao === "COMISSAO" ? d.comissaoPercentual : null,
   };
 
   try {
