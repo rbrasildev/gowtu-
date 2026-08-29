@@ -6,7 +6,7 @@ import { formatDate, formatQuantidade, toNumber } from "@/lib/utils";
 import { fmtMoney, type MoedaConfig } from "@/lib/currency";
 import { CATEGORIAS } from "@/lib/domain";
 import type { MovimentoComRelacoes } from "@/lib/movimentos";
-import { excluirMovimento } from "@/app/estoque/[slug]/actions";
+import { excluirMovimento } from "@/app/(protected)/estoque/[slug]/actions";
 
 export function MovimentoList({
   movimentos,

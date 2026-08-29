@@ -6,6 +6,8 @@ export interface NavItem {
   icon: IconName;
   /** casa como prefixo (para submenus) */
   match?: string;
+  /** visível apenas para administradores */
+  adminOnly?: boolean;
 }
 
 export interface NavGroup {
@@ -42,9 +44,21 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: "Sistema",
-    items: [{ href: "/configuracoes", label: "Configurações", icon: "gear" }],
+    items: [
+      { href: "/usuarios", label: "Usuários", icon: "users", adminOnly: true },
+      { href: "/configuracoes", label: "Configurações", icon: "gear", adminOnly: true },
+    ],
   },
 ];
+
+/** Filtra grupos/itens conforme o papel do usuário. */
+export function filtrarNav(papel: "ADMIN" | "OPERADOR"): NavGroup[] {
+  if (papel === "ADMIN") return NAV_GROUPS;
+  return NAV_GROUPS.map((g) => ({
+    ...g,
+    items: g.items.filter((i) => !i.adminOnly),
+  })).filter((g) => g.items.length > 0);
+}
 
 // Navegação inferior (mobile) — 5 destinos principais
 export const MOBILE_NAV: NavItem[] = [

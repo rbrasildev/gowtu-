@@ -7,7 +7,7 @@ import { formatQuantidade, formatNumber } from "@/lib/utils";
 import { fmtMoney, type MoedaConfig } from "@/lib/currency";
 import { CATEGORIAS, type Categoria } from "@/lib/domain";
 import type { ProdutoComEstoque } from "@/lib/estoque";
-import { excluirProduto } from "@/app/estoque/[slug]/actions";
+import { excluirProduto } from "@/app/(protected)/estoque/[slug]/actions";
 
 export function ProdutoList({
   produtos,

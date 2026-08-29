@@ -50,6 +50,40 @@ enum TipoMovimento {
   SAIDA
 }
 
+enum Papel {
+  ADMIN
+  OPERADOR
+}
+
+model Usuario {
+  id           String    @id @default(cuid())
+  nome         String
+  email        String    @unique
+  senhaHash    String
+  papel        Papel     @default(OPERADOR)
+  ativo        Boolean   @default(true)
+  ultimoAcesso DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  sessoes Sessao[]
+
+  @@index([ativo])
+}
+
+model Sessao {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  expiraEm  DateTime
+  createdAt DateTime @default(now())
+
+  usuarioId String
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([expiraEm])
+}
+
 // Configuração única do sistema (linha singleton).
 // Valores monetários são armazenados em USD (moeda principal);
 // taxaUsdBrl converte para exibição em BRL.

@@ -4,10 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { NAV_GROUPS, MOBILE_NAV, isActive } from "@/lib/nav";
+import { MOBILE_NAV, isActive, filtrarNav, type NavGroup } from "@/lib/nav";
+import { sair } from "@/app/(auth)/actions";
 import { Icon } from "./ui/icon";
 import { ThemeToggle } from "./theme-toggle";
 import { CurrencyToggle } from "./currency-toggle";
+
+interface Usuario {
+  nome: string;
+  email: string;
+  papel: "ADMIN" | "OPERADOR";
+}
 
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
@@ -25,10 +32,18 @@ function Brand({ compact = false }: { compact?: boolean }) {
   );
 }
 
-function SidebarLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+function SidebarLinks({
+  groups,
+  pathname,
+  onNavigate,
+}: {
+  groups: NavGroup[];
+  pathname: string;
+  onNavigate?: () => void;
+}) {
   return (
     <nav className="flex flex-col gap-5 px-3 py-4">
-      {NAV_GROUPS.map((group) => (
+      {groups.map((group) => (
         <div key={group.title}>
           <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
             {group.title}
@@ -62,9 +77,49 @@ function SidebarLinks({ pathname, onNavigate }: { pathname: string; onNavigate?:
   );
 }
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+function UserFooter({ usuario }: { usuario: Usuario }) {
+  const iniciais = usuario.nome
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  return (
+    <div className="flex items-center gap-3 border-t border-border px-4 py-3">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent">
+        {iniciais}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium text-text-primary">{usuario.nome}</p>
+        <p className="truncate text-[11px] text-text-secondary">
+          {usuario.papel === "ADMIN" ? "Administrador" : "Operador"}
+        </p>
+      </div>
+      <form action={sair}>
+        <button
+          type="submit"
+          className="flex h-9 w-9 items-center justify-center rounded-md text-text-secondary hover:bg-danger-soft hover:text-danger"
+          aria-label="Sair"
+          title="Sair"
+        >
+          <Icon name="logout" size={18} />
+        </button>
+      </form>
+    </div>
+  );
+}
+
+export function AppShell({
+  children,
+  usuario,
+}: {
+  children: React.ReactNode;
+  usuario: Usuario;
+}) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const groups = filtrarNav(usuario.papel);
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[260px_1fr]">
@@ -74,11 +129,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Brand />
         </div>
         <div className="flex-1 overflow-y-auto">
-          <SidebarLinks pathname={pathname} />
+          <SidebarLinks groups={groups} pathname={pathname} />
         </div>
-        <div className="border-t border-border px-4 py-3 text-[11px] text-text-muted">
-          v1.0 · {new Date().getFullYear()}
-        </div>
+        <UserFooter usuario={usuario} />
       </aside>
 
       {/* Coluna de conteúdo */}
@@ -128,8 +181,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto">
-              <SidebarLinks pathname={pathname} onNavigate={() => setDrawerOpen(false)} />
+              <SidebarLinks
+                groups={groups}
+                pathname={pathname}
+                onNavigate={() => setDrawerOpen(false)}
+              />
             </div>
+            <UserFooter usuario={usuario} />
           </div>
         </div>
       )}
