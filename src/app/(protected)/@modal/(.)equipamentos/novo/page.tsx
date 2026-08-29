@@ -1,4 +1,5 @@
 import { salvarEquipamento } from "@/app/(protected)/equipamentos/actions";
+import { getLocaisAtivos } from "@/lib/locais";
 import { RouteModal } from "@/components/route-modal";
 import { EquipamentoForm } from "@/components/forms/equipamento-form";
 
@@ -10,6 +11,7 @@ export default async function NovoEquipamentoModal({
   searchParams: Promise<{ erro?: string }>;
 }) {
   const { erro } = await searchParams;
+  const locais = await getLocaisAtivos();
   return (
     <RouteModal
       title="Novo equipamento / veículo"
@@ -17,7 +19,11 @@ export default async function NovoEquipamentoModal({
       icon="truck"
       tone="info"
     >
-      <EquipamentoForm erro={erro} action={salvarEquipamento.bind(null, null)} />
+      <EquipamentoForm
+        erro={erro}
+        locais={locais}
+        action={salvarEquipamento.bind(null, null)}
+      />
     </RouteModal>
   );
 }

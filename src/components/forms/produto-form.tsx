@@ -1,6 +1,6 @@
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { ButtonLink } from "@/components/ui/button";
+import { CancelButton } from "@/components/ui/cancel-button";
 import { FormError } from "@/components/ui/form-error";
 import { UNIDADES, CATEGORIAS, type Categoria } from "@/lib/domain";
 import { toNumber } from "@/lib/utils";
@@ -18,7 +18,6 @@ export function ProdutoForm({
   erro?: string;
 }) {
   const meta = CATEGORIAS[categoria];
-  const backHref = `/estoque/${meta.slug}`;
 
   return (
     <form action={action} className="flex flex-col gap-5">
@@ -106,9 +105,7 @@ export function ProdutoForm({
       </div>
 
       <div className="flex flex-col-reverse gap-2 border-t border-border pt-5 sm:flex-row sm:justify-end">
-        <ButtonLink href={backHref} variant="secondary">
-          Cancelar
-        </ButtonLink>
+        <CancelButton />
         <SubmitButton icon="check">
           {produto ? "Salvar alterações" : "Cadastrar produto"}
         </SubmitButton>

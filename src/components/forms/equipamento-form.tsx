@@ -1,6 +1,6 @@
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { ButtonLink } from "@/components/ui/button";
+import { CancelButton } from "@/components/ui/cancel-button";
 import { FormError } from "@/components/ui/form-error";
 import { STATUS_EQUIP, TIPO_EQUIP } from "@/lib/domain";
 import { toNumber } from "@/lib/utils";
@@ -9,10 +9,12 @@ import type { Equipamento } from "@prisma/client";
 export function EquipamentoForm({
   action,
   equipamento,
+  locais,
   erro,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   equipamento?: Equipamento | null;
+  locais: { id: string; nome: string; cidade: string | null }[];
   erro?: string;
 }) {
   return (
@@ -79,13 +81,20 @@ export function EquipamentoForm({
           />
         </Field>
 
-        <Field label="Local" htmlFor="local" hint="Onde está alocado">
-          <Input
-            id="local"
-            name="local"
-            defaultValue={equipamento?.local ?? ""}
-            placeholder="Ex.: Pátio / Obra São João"
-          />
+        <Field
+          label="Local"
+          htmlFor="localId"
+          hint={locais.length ? "Onde o ativo está alocado" : "Cadastre um local em Locais"}
+        >
+          <Select id="localId" name="localId" defaultValue={equipamento?.localId ?? ""}>
+            <option value="">— Sem local —</option>
+            {locais.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.nome}
+                {l.cidade ? ` — ${l.cidade}` : ""}
+              </option>
+            ))}
+          </Select>
         </Field>
 
         <Field label="Modelo" htmlFor="modelo">
@@ -160,9 +169,7 @@ export function EquipamentoForm({
       </div>
 
       <div className="flex flex-col-reverse gap-2 border-t border-border pt-5 sm:flex-row sm:justify-end">
-        <ButtonLink href="/equipamentos" variant="secondary">
-          Cancelar
-        </ButtonLink>
+        <CancelButton />
         <SubmitButton icon="check">
           {equipamento ? "Salvar alterações" : "Cadastrar ativo"}
         </SubmitButton>

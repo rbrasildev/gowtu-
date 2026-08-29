@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { salvarEquipamento } from "@/app/(protected)/equipamentos/actions";
+import { getLocaisAtivos } from "@/lib/locais";
 import { RouteModal } from "@/components/route-modal";
 import { EquipamentoForm } from "@/components/forms/equipamento-form";
 
@@ -17,11 +18,13 @@ export default async function EditarEquipamentoModal({
   const { erro } = await searchParams;
   const equipamento = await prisma.equipamento.findUnique({ where: { id } });
   if (!equipamento) notFound();
+  const locais = await getLocaisAtivos();
 
   return (
     <RouteModal title="Editar ativo" description={equipamento.nome} icon="truck" tone="info">
       <EquipamentoForm
         equipamento={equipamento}
+        locais={locais}
         erro={erro}
         action={salvarEquipamento.bind(null, equipamento.id)}
       />

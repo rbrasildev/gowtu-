@@ -43,7 +43,8 @@ export default async function EquipamentosPage({
       { nome: { contains: sp.q, mode: "insensitive" } },
       { patrimonio: { contains: sp.q, mode: "insensitive" } },
       { numeroSerie: { contains: sp.q, mode: "insensitive" } },
-      { local: { contains: sp.q, mode: "insensitive" } },
+      { local: { nome: { contains: sp.q, mode: "insensitive" } } },
+      { local: { cidade: { contains: sp.q, mode: "insensitive" } } },
       { placa: { contains: sp.q, mode: "insensitive" } },
       { modelo: { contains: sp.q, mode: "insensitive" } },
       { fabricante: { contains: sp.q, mode: "insensitive" } },
@@ -52,7 +53,11 @@ export default async function EquipamentosPage({
 
   const [lista, total, ativos, manutencao, veiculos, valorAgg, moeda] =
     await Promise.all([
-      prisma.equipamento.findMany({ where, orderBy: { nome: "asc" } }),
+      prisma.equipamento.findMany({
+        where,
+        orderBy: { nome: "asc" },
+        include: { local: { select: { nome: true, cidade: true } } },
+      }),
       prisma.equipamento.count(),
       prisma.equipamento.count({ where: { status: "ATIVO" } }),
       prisma.equipamento.count({ where: { status: "MANUTENCAO" } }),
@@ -167,7 +172,7 @@ export default async function EquipamentosPage({
                             <div className="text-xs text-text-muted">
                               {e.numeroSerie ? `Série ${e.numeroSerie}` : ""}
                               {e.numeroSerie && e.local ? " · " : ""}
-                              {e.local ?? ""}
+                              {e.local ? `📍 ${e.local.nome}` : ""}
                             </div>
                           )}
                         </td>
@@ -218,7 +223,7 @@ export default async function EquipamentosPage({
                       <p className="truncate text-xs text-text-secondary">
                         {e.modelo ?? tp.label}
                         {e.placa ? ` · ${e.placa}` : ""}
-                        {e.local ? ` · ${e.local}` : ""}
+                        {e.local ? ` · ${e.local.nome}` : ""}
                         {e.medidor ? ` · ${formatNumber(e.medidor)}` : ""}
                       </p>
                       {e.valor != null && (

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { ButtonLink } from "@/components/ui/button";
+import { CancelButton } from "@/components/ui/cancel-button";
 import { FormError } from "@/components/ui/form-error";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
@@ -214,9 +214,7 @@ export function MovimentoForm({
       </div>
 
       <div className="flex flex-col-reverse gap-2 border-t border-border pt-5 sm:flex-row sm:justify-end">
-        <ButtonLink href={`/estoque/${slug}`} variant="secondary">
-          Cancelar
-        </ButtonLink>
+        <CancelButton />
         <SubmitButton
           icon="check"
           variant={entrada ? "success" : "danger"}

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { salvarEquipamento } from "../actions";
+import { getLocaisAtivos } from "@/lib/locais";
 import { FormShell } from "@/components/ui/form-shell";
 import { EquipamentoForm } from "@/components/forms/equipamento-form";
 
@@ -18,6 +19,7 @@ export default async function EditarEquipamento({
   const { erro } = await searchParams;
   const equipamento = await prisma.equipamento.findUnique({ where: { id } });
   if (!equipamento) notFound();
+  const locais = await getLocaisAtivos();
 
   return (
     <FormShell
@@ -30,6 +32,7 @@ export default async function EditarEquipamento({
     >
       <EquipamentoForm
         equipamento={equipamento}
+        locais={locais}
         erro={erro}
         action={salvarEquipamento.bind(null, equipamento.id)}
       />

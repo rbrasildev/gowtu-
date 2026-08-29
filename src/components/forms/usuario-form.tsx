@@ -1,7 +1,7 @@
 import { Field, Input, Select } from "@/components/ui/field";
 import { PasswordInput } from "@/components/ui/password-input";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { ButtonLink } from "@/components/ui/button";
+import { CancelButton } from "@/components/ui/cancel-button";
 import { FormError } from "@/components/ui/form-error";
 import type { Usuario } from "@prisma/client";
 
@@ -83,9 +83,7 @@ export function UsuarioForm({
       </div>
 
       <div className="flex flex-col-reverse gap-2 border-t border-border pt-5 sm:flex-row sm:justify-end">
-        <ButtonLink href="/usuarios" variant="secondary">
-          Cancelar
-        </ButtonLink>
+        <CancelButton />
         <SubmitButton icon="check">
           {editando ? "Salvar alterações" : "Cadastrar usuário"}
         </SubmitButton>

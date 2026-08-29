@@ -1,6 +1,6 @@
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { ButtonLink } from "@/components/ui/button";
+import { CancelButton } from "@/components/ui/cancel-button";
 import { FormError } from "@/components/ui/form-error";
 import { STATUS_COLAB } from "@/lib/domain";
 import { toDateInput } from "@/lib/utils";
@@ -108,9 +108,7 @@ export function ColaboradorForm({
       </div>
 
       <div className="flex flex-col-reverse gap-2 border-t border-border pt-5 sm:flex-row sm:justify-end">
-        <ButtonLink href="/colaboradores" variant="secondary">
-          Cancelar
-        </ButtonLink>
+        <CancelButton />
         <SubmitButton icon="check">
           {colaborador ? "Salvar alterações" : "Cadastrar colaborador"}
         </SubmitButton>

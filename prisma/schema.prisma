@@ -118,7 +118,6 @@ model Equipamento {
   tipo        TipoEquipamento   @default(EQUIPAMENTO)
   patrimonio  String?           @unique
   numeroSerie String?
-  local       String?
   placa       String?
   modelo      String?
   fabricante  String?
@@ -130,10 +129,33 @@ model Equipamento {
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
 
+  localId String?
+  local   Local?  @relation(fields: [localId], references: [id], onDelete: SetNull)
+
   movimentos MovimentoEstoque[]
 
   @@index([tipo])
   @@index([status])
+  @@index([localId])
+}
+
+model Local {
+  id          String   @id @default(cuid())
+  nome        String
+  endereco    String?
+  cidade      String?
+  estado      String? // UF
+  cep         String?
+  responsavel String?
+  telefone    String?
+  observacao  String?
+  ativo       Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  equipamentos Equipamento[]
+
+  @@index([ativo])
 }
 
 model Produto {

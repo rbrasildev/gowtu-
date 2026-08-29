@@ -1,4 +1,5 @@
 import { salvarEquipamento } from "../actions";
+import { getLocaisAtivos } from "@/lib/locais";
 import { FormShell } from "@/components/ui/form-shell";
 import { EquipamentoForm } from "@/components/forms/equipamento-form";
 
@@ -11,6 +12,7 @@ export default async function NovoEquipamento({
   searchParams: Promise<{ erro?: string }>;
 }) {
   const { erro } = await searchParams;
+  const locais = await getLocaisAtivos();
   return (
     <FormShell
       title="Novo equipamento / veículo"
@@ -20,7 +22,11 @@ export default async function NovoEquipamento({
       backHref="/equipamentos"
       backLabel="Voltar para Equipamentos"
     >
-      <EquipamentoForm erro={erro} action={salvarEquipamento.bind(null, null)} />
+      <EquipamentoForm
+        erro={erro}
+        locais={locais}
+        action={salvarEquipamento.bind(null, null)}
+      />
     </FormShell>
   );
 }
