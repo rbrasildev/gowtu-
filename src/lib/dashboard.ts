@@ -11,6 +11,7 @@ export async function getDashboard() {
     equipamentosAtivos,
     equipamentosManutencao,
     totalVeiculos,
+    valorPatrimonioAgg,
     movimentosMes,
   ] = await Promise.all([
     prisma.colaborador.count(),
@@ -19,8 +20,10 @@ export async function getDashboard() {
     prisma.equipamento.count({ where: { status: "ATIVO" } }),
     prisma.equipamento.count({ where: { status: "MANUTENCAO" } }),
     prisma.equipamento.count({ where: { tipo: "VEICULO" } }),
+    prisma.equipamento.aggregate({ _sum: { valor: true } }),
     contarMovimentosDoMes(),
   ]);
+  const valorPatrimonioAtivos = toNumber(valorPatrimonioAgg._sum.valor);
 
   // Estoque por categoria + alertas de mínimo
   const categorias = await Promise.all(
@@ -60,10 +63,12 @@ export async function getDashboard() {
     equipamentosAtivos,
     equipamentosManutencao,
     totalVeiculos,
+    valorPatrimonioAtivos,
     movimentosMes,
     categorias,
     alertasEstoque,
     valorTotalEstoque,
+    valorTotalGeral: valorPatrimonioAtivos + valorTotalEstoque,
     ultimosMovimentos,
   };
 }

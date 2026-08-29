@@ -70,6 +70,24 @@ export function EquipamentoForm({
           />
         </Field>
 
+        <Field label="Nº de série" htmlFor="numeroSerie">
+          <Input
+            id="numeroSerie"
+            name="numeroSerie"
+            defaultValue={equipamento?.numeroSerie ?? ""}
+            placeholder="Ex.: SN-000123"
+          />
+        </Field>
+
+        <Field label="Local" htmlFor="local" hint="Onde está alocado">
+          <Input
+            id="local"
+            name="local"
+            defaultValue={equipamento?.local ?? ""}
+            placeholder="Ex.: Pátio / Obra São João"
+          />
+        </Field>
+
         <Field label="Modelo" htmlFor="modelo">
           <Input
             id="modelo"
@@ -111,6 +129,23 @@ export function EquipamentoForm({
             inputMode="decimal"
             defaultValue={equipamento ? String(toNumber(equipamento.medidor)) : ""}
             placeholder="0"
+          />
+        </Field>
+
+        <Field
+          label="Valor estipulado (US$)"
+          htmlFor="valor"
+          hint="Em dólar — usado no total do patrimônio"
+        >
+          <Input
+            id="valor"
+            name="valor"
+            type="number"
+            step="0.01"
+            min="0"
+            inputMode="decimal"
+            defaultValue={equipamento?.valor != null ? String(toNumber(equipamento.valor)) : ""}
+            placeholder="0,00"
           />
         </Field>
 

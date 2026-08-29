@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { STATUS_EQUIP, TIPO_EQUIP } from "@/lib/domain";
-import { formatNumber } from "@/lib/utils";
+import { formatNumber, toNumber } from "@/lib/utils";
+import { getMoedaConfig, fmtMoney } from "@/lib/currency";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -41,19 +42,25 @@ export default async function EquipamentosPage({
     where.OR = [
       { nome: { contains: sp.q, mode: "insensitive" } },
       { patrimonio: { contains: sp.q, mode: "insensitive" } },
+      { numeroSerie: { contains: sp.q, mode: "insensitive" } },
+      { local: { contains: sp.q, mode: "insensitive" } },
       { placa: { contains: sp.q, mode: "insensitive" } },
       { modelo: { contains: sp.q, mode: "insensitive" } },
       { fabricante: { contains: sp.q, mode: "insensitive" } },
     ];
   }
 
-  const [lista, total, ativos, manutencao, veiculos] = await Promise.all([
-    prisma.equipamento.findMany({ where, orderBy: { nome: "asc" } }),
-    prisma.equipamento.count(),
-    prisma.equipamento.count({ where: { status: "ATIVO" } }),
-    prisma.equipamento.count({ where: { status: "MANUTENCAO" } }),
-    prisma.equipamento.count({ where: { tipo: "VEICULO" } }),
-  ]);
+  const [lista, total, ativos, manutencao, veiculos, valorAgg, moeda] =
+    await Promise.all([
+      prisma.equipamento.findMany({ where, orderBy: { nome: "asc" } }),
+      prisma.equipamento.count(),
+      prisma.equipamento.count({ where: { status: "ATIVO" } }),
+      prisma.equipamento.count({ where: { status: "MANUTENCAO" } }),
+      prisma.equipamento.count({ where: { tipo: "VEICULO" } }),
+      prisma.equipamento.aggregate({ _sum: { valor: true } }),
+      getMoedaConfig(),
+    ]);
+  const valorPatrimonio = toNumber(valorAgg._sum.valor);
 
   const activeFilter = sp.status === "MANUTENCAO" ? "MANUTENCAO" : filtro;
 
@@ -71,7 +78,15 @@ export default async function EquipamentosPage({
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <StatCard
+          label="Valor do patrimônio"
+          value={fmtMoney(valorPatrimonio, moeda)}
+          sub="soma dos valores estipulados"
+          icon="wallet"
+          tone="success"
+          className="col-span-2 lg:col-span-1"
+        />
         <StatCard label="Total" value={total} icon="truck" tone="accent" />
         <StatCard label="Ativos" value={ativos} icon="check" tone="success" />
         <StatCard label="Manutenção" value={manutencao} icon="wrench" tone="warning" />
@@ -130,6 +145,7 @@ export default async function EquipamentosPage({
                     <th className="px-3 py-2.5 font-medium">Tipo</th>
                     <th className="px-3 py-2.5 font-medium">Modelo / Fab.</th>
                     <th className="px-3 py-2.5 text-right font-medium">Medidor</th>
+                    <th className="px-3 py-2.5 text-right font-medium">Valor</th>
                     <th className="px-3 py-2.5 font-medium">Situação</th>
                     <th className="px-5 py-2.5 text-right font-medium">Ações</th>
                   </tr>
@@ -147,6 +163,13 @@ export default async function EquipamentosPage({
                             {e.placa && e.patrimonio ? " · " : ""}
                             {e.patrimonio ? `Pat. ${e.patrimonio}` : ""}
                           </div>
+                          {(e.numeroSerie || e.local) && (
+                            <div className="text-xs text-text-muted">
+                              {e.numeroSerie ? `Série ${e.numeroSerie}` : ""}
+                              {e.numeroSerie && e.local ? " · " : ""}
+                              {e.local ?? ""}
+                            </div>
+                          )}
                         </td>
                         <td className="px-3 py-3">
                           <Badge tone={tp.tone}>{tp.label}</Badge>
@@ -161,6 +184,9 @@ export default async function EquipamentosPage({
                         </td>
                         <td className="px-3 py-3 text-right tabular-nums text-text-secondary">
                           {e.medidor ? formatNumber(e.medidor) : "—"}
+                        </td>
+                        <td className="px-3 py-3 text-right tabular-nums text-text-primary">
+                          {e.valor != null ? fmtMoney(e.valor, moeda) : "—"}
                         </td>
                         <td className="px-3 py-3">
                           <Badge tone={st.tone} dot>
@@ -192,8 +218,14 @@ export default async function EquipamentosPage({
                       <p className="truncate text-xs text-text-secondary">
                         {e.modelo ?? tp.label}
                         {e.placa ? ` · ${e.placa}` : ""}
+                        {e.local ? ` · ${e.local}` : ""}
                         {e.medidor ? ` · ${formatNumber(e.medidor)}` : ""}
                       </p>
+                      {e.valor != null && (
+                        <p className="mt-0.5 text-xs font-semibold text-text-primary tabular-nums">
+                          {fmtMoney(e.valor, moeda)}
+                        </p>
+                      )}
                       <div className="mt-1.5 flex gap-1.5">
                         <Badge tone={tp.tone}>{tp.label}</Badge>
                         <Badge tone={st.tone} dot>

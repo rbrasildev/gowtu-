@@ -31,7 +31,7 @@ export default async function DashboardPage() {
       />
 
       {/* KPIs principais */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <StatCard
           label="Colaboradores"
           value={formatNumber(d.colaboradoresAtivos)}
@@ -45,6 +45,13 @@ export default async function DashboardPage() {
           sub={`${d.equipamentosAtivos} ativos · ${d.totalVeiculos} veículos`}
           icon="truck"
           tone="info"
+        />
+        <StatCard
+          label="Patrimônio (ativos)"
+          value={fmtMoney(d.valorPatrimonioAtivos, moeda)}
+          sub="valor dos equip. e veículos"
+          icon="wallet"
+          tone="accent"
         />
         <StatCard
           label="Valor em estoque"

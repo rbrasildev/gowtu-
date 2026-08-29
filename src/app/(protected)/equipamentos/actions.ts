@@ -21,12 +21,15 @@ const schema = z.object({
   nome: z.string().trim().min(1, "Informe o nome/identificação"),
   tipo: z.enum(["EQUIPAMENTO", "VEICULO"]),
   patrimonio: z.string().trim().optional(),
+  numeroSerie: z.string().trim().optional(),
+  local: z.string().trim().optional(),
   placa: z.string().trim().optional(),
   modelo: z.string().trim().optional(),
   fabricante: z.string().trim().optional(),
   ano: anoOpt,
   status: z.enum(["ATIVO", "MANUTENCAO", "INATIVO"]),
   medidor: decimalOpt,
+  valor: decimalOpt,
   observacao: z.string().trim().optional(),
 });
 
@@ -41,12 +44,15 @@ export async function salvarEquipamento(id: string | null, formData: FormData) {
     nome: d.nome,
     tipo: d.tipo,
     patrimonio: d.patrimonio || null,
+    numeroSerie: d.numeroSerie || null,
+    local: d.local || null,
     placa: d.placa ? d.placa.toUpperCase() : null,
     modelo: d.modelo || null,
     fabricante: d.fabricante || null,
     ano: d.ano,
     status: d.status,
     medidor: d.medidor,
+    valor: d.valor,
     observacao: d.observacao || null,
   };
 
