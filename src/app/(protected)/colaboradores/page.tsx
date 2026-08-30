@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { STATUS_COLAB } from "@/lib/domain";
-import { formatDate, formatNumber } from "@/lib/utils";
+import { formatDate, formatNumber, toNumber, cn } from "@/lib/utils";
 import { getMoedaConfig, fmtMoney, type MoedaConfig } from "@/lib/currency";
-import type { Colaborador } from "@prisma/client";
+import type { Colaborador, Prisma } from "@prisma/client";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -21,27 +21,35 @@ export const metadata = { title: "Colaboradores" };
 export default async function ColaboradoresPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; rem?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, rem } = await searchParams;
 
-  const [colaboradores, ativos, afastados] = await Promise.all([
-    prisma.colaborador.findMany({
-      where: q
-        ? {
-            OR: [
-              { nome: { contains: q, mode: "insensitive" } },
-              { matricula: { contains: q, mode: "insensitive" } },
-              { cargo: { contains: q, mode: "insensitive" } },
-              { setor: { contains: q, mode: "insensitive" } },
-            ],
-          }
-        : undefined,
-      orderBy: { nome: "asc" },
-    }),
-    prisma.colaborador.count({ where: { status: "ATIVO" } }),
-    prisma.colaborador.count({ where: { status: "AFASTADO" } }),
-  ]);
+  const where: Prisma.ColaboradorWhereInput = {};
+  if (rem === "SALARIO" || rem === "COMISSAO") where.tipoRemuneracao = rem;
+  if (q) {
+    where.OR = [
+      { nome: { contains: q, mode: "insensitive" } },
+      { matricula: { contains: q, mode: "insensitive" } },
+      { cargo: { contains: q, mode: "insensitive" } },
+      { setor: { contains: q, mode: "insensitive" } },
+    ];
+  }
+
+  const [colaboradores, ativos, afastados, folhaAgg, comissionados] =
+    await Promise.all([
+      prisma.colaborador.findMany({ where, orderBy: { nome: "asc" } }),
+      prisma.colaborador.count({ where: { status: "ATIVO" } }),
+      prisma.colaborador.count({ where: { status: "AFASTADO" } }),
+      prisma.colaborador.aggregate({
+        _sum: { salario: true },
+        where: { status: "ATIVO", tipoRemuneracao: "SALARIO" },
+      }),
+      prisma.colaborador.count({
+        where: { status: "ATIVO", tipoRemuneracao: "COMISSAO" },
+      }),
+    ]);
+  const folhaSalarios = toNumber(folhaAgg._sum.salario);
   const moeda = await getMoedaConfig();
 
   return (
@@ -57,15 +65,49 @@ export default async function ColaboradoresPage({
         }
       />
 
-      <div className="grid grid-cols-3 gap-3">
-        <StatCard label="Total" value={colaboradores.length} icon="users" tone="accent" />
-        <StatCard label="Ativos" value={ativos} icon="check" tone="success" />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard
+          label="Folha de salários"
+          value={fmtMoney(folhaSalarios, moeda)}
+          sub="assalariados ativos"
+          icon="wallet"
+          tone="success"
+          className="col-span-2 lg:col-span-1"
+        />
+        <StatCard label="Ativos" value={ativos} icon="check" tone="accent" />
+        <StatCard label="Comissionados" value={comissionados} icon="trend" tone="info" />
         <StatCard label="Afastados" value={afastados} icon="alert" tone="warning" />
       </div>
 
-      <Card className="mt-4">
+      {/* Filtros por remuneração */}
+      <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+        {[
+          { key: "", label: "Todos" },
+          { key: "SALARIO", label: "Assalariados" },
+          { key: "COMISSAO", label: "Comissionados" },
+        ].map((f) => {
+          const active = (rem ?? "") === f.key;
+          const href = f.key ? `/colaboradores?rem=${f.key}` : "/colaboradores";
+          return (
+            <Link
+              key={f.key || "todos"}
+              href={href}
+              className={cn(
+                "flex h-9 shrink-0 items-center rounded-full border px-4 text-sm font-medium transition-colors",
+                active
+                  ? "border-accent bg-accent text-accent-fg"
+                  : "border-border bg-surface text-text-secondary hover:bg-surface-2",
+              )}
+            >
+              {f.label}
+            </Link>
+          );
+        })}
+      </div>
+
+      <Card className="mt-3">
         <CardHeader
-          title="Equipe"
+          title={rem === "COMISSAO" ? "Comissionados" : rem === "SALARIO" ? "Assalariados" : "Equipe"}
           subtitle={`${colaboradores.length} colaborador(es)`}
           action={<SearchInput placeholder="Buscar por nome, cargo…" />}
         />
@@ -73,14 +115,14 @@ export default async function ColaboradoresPage({
         {colaboradores.length === 0 ? (
           <EmptyState
             icon="users"
-            title={q ? "Nenhum resultado" : "Nenhum colaborador cadastrado"}
+            title={q || rem ? "Nenhum resultado" : "Nenhum colaborador cadastrado"}
             description={
-              q
-                ? "Tente ajustar a busca."
+              q || rem
+                ? "Ajuste a busca ou o filtro."
                 : "Cadastre os colaboradores para vinculá-los às movimentações."
             }
-            actionLabel={q ? undefined : "Cadastrar colaborador"}
-            actionHref={q ? undefined : "/colaboradores/novo"}
+            actionLabel={q || rem ? undefined : "Cadastrar colaborador"}
+            actionHref={q || rem ? undefined : "/colaboradores/novo"}
           />
         ) : (
           <>
